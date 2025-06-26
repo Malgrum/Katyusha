@@ -6,7 +6,6 @@ import re
 from datetime import datetime
 
 MEMOIRE_FILE = "memoire.json"
-CLE_METEO = "6fcecbe2c35649f290a161321252306"  # 🔁 remplace par clé OpenWeather
 
 def afficher(texte):
     print("Katyusha:", texte)
@@ -102,11 +101,13 @@ def donner_heure():
     maintenant = datetime.now()
     return maintenant.strftime("Il est %H heure %M")
 
-def obtenir_meteo(ville="Strasbourg"):
-    url = url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={ville}&lang=fr"
+def meteo(ville="Strasbourg"):
     try:
+        api_key = "6fcecbe2c35649f290a161321252306"
+        url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={ville}&lang=fr"
         response = requests.get(url, timeout=5)
         data = response.json()
+
         if "current" in data:
             temp = data["current"]["temp_c"]
             condition = data["current"]["condition"]["text"]
@@ -115,6 +116,7 @@ def obtenir_meteo(ville="Strasbourg"):
             return "Je n'ai pas pu obtenir la météo pour cette ville."
     except Exception as e:
         return f"Erreur météo : {e}"
+
 
 def extraire_ville(commande):
     mots = commande.split()
@@ -125,14 +127,14 @@ def extraire_ville(commande):
 
 def traiter(commande, memoire):
     if "météo" in commande or "temps" in commande:
-    ville = "Strasbourg"  
-    mots = commande.split()
-    for i, mot in enumerate(mots):
-        if mot == "à" and i + 1 < len(mots):
-            ville = mots[i + 1]
-            break
-    reponse = meteo(ville)
-    print("🌦️", reponse)
+        ville = "Strasbourg"  
+        mots = commande.split()
+        for i, mot in enumerate(mots):
+            if mot == "à" and i + 1 < len(mots):
+                ville = mots[i + 1]
+                break
+        reponse = meteo(ville)
+        print("🌦️", reponse)
 
     elif any(mot in commande for mot in ["calcule", "combien", "font", "fait", "résultat"]):
         expression = convertir_en_expression(commande)
