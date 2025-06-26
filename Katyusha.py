@@ -4,25 +4,48 @@ import os
 import requests
 import re
 from datetime import datetime
+import warnings
+import sys
+
+# Supprime les messages d'erreurs ALSA/JACK
+warnings.filterwarnings("ignore")
+sys.stderr = open(os.devnull, 'w')
+
+# Empêche les avertissements Python
+os.environ["PYTHONWARNINGS"] = "ignore"
 
 MEMOIRE_FILE = "memoire.json"
 
 def afficher(texte):
     print("Katyusha:", texte)
 
+def parler(texte):
+    afficher(texte)  # Pas de synthèse vocale, juste du texte
+
 def ecouter():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("🎤 Katyusha écoute...")
-        recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
-    try:
-        texte = recognizer.recognize_google(audio, language="fr-FR")
-        print("🗣️ Vous avez dit :", texte)
+    choix = input("🎧 Tapez [v] pour vocal ou [t] pour texte : ").strip().lower()
+
+    if choix == "t":
+        texte = input("✍️ Vous : ")
         return texte.lower()
-    except Exception:
-        afficher("Désolé, je n'ai pas compris.")
-        return ""
+
+    elif choix == "v":
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            print("🎤 Katyusha écoute...")
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source)
+        try:
+            texte = recognizer.recognize_google(audio, language="fr-FR")
+            print("🗣️ Vous avez dit :", texte)
+            return texte.lower()
+        except Exception:
+            print("⚠️ Désolé, je n'ai pas compris.")
+            return ""
+
+    else:
+        print("❓ Option invalide. Tapez 'v' ou 't'.")
+        return ecouter()
 
 def charger_memoire():
     if os.path.exists(MEMOIRE_FILE):
@@ -66,23 +89,15 @@ def chercher_wikipedia(question):
 
 def convertir_en_expression(texte):
     remplacements = {
-        "puissance": "**",
-        "fois": "*",
-        "multiplié par": "*",
-        "divisé par": "/",
-        "sur": "/",
-        "plus": "+",
-        "moins": "-",
-        "parenthèse ouvrante": "(",
-        "parenthèse fermante": ")",
-        "égal": "=",
-        "virgule": ".",
-        "et": "+",
-        "zéro": "0", "un": "1", "deux": "2", "trois": "3", "quatre": "4",
+        "puissance": "**", "fois": "*", "multiplié par": "*", "divisé par": "/",
+        "sur": "/", "plus": "+", "moins": "-", "parenthèse ouvrante": "(", 
+        "parenthèse fermante": ")", "égal": "=", "virgule": ".", "et": "+",
+        "zéro": "0", "un": "1", "deux": "2", "trois": "3", "quatre": "4", 
         "cinq": "5", "six": "6", "sept": "7", "huit": "8", "neuf": "9",
-        "dix": "10", "onze": "11", "douze": "12", "treize": "13", "quatorze": "14",
-        "quinze": "15", "seize": "16", "vingt": "20", "trente": "30", "quarante": "40",
-        "cinquante": "50", "soixante": "60", "soixante-dix": "70", "quatre-vingt": "80",
+        "dix": "10", "onze": "11", "douze": "12", "treize": "13", 
+        "quatorze": "14", "quinze": "15", "seize": "16", "vingt": "20", 
+        "trente": "30", "quarante": "40", "cinquante": "50", 
+        "soixante": "60", "soixante-dix": "70", "quatre-vingt": "80", 
         "quatre-vingt-dix": "90", "cent": "100", "mille": "1000"
     }
     for mot, symbole in remplacements.items():
@@ -117,7 +132,6 @@ def meteo(ville="Strasbourg"):
     except Exception as e:
         return f"Erreur météo : {e}"
 
-
 def extraire_ville(commande):
     mots = commande.split()
     for i in range(len(mots)):
@@ -127,53 +141,48 @@ def extraire_ville(commande):
 
 def traiter(commande, memoire):
     if "météo" in commande or "temps" in commande:
-        ville = "Strasbourg"  
-        mots = commande.split()
-        for i, mot in enumerate(mots):
-            if mot == "à" and i + 1 < len(mots):
-                ville = mots[i + 1]
-                break
+        ville = extraire_ville(commande)
         reponse = meteo(ville)
-        print("🌦️", reponse)
+        parler("🌦️ " + reponse)
 
     elif any(mot in commande for mot in ["calcule", "combien", "font", "fait", "résultat"]):
         expression = convertir_en_expression(commande)
         reponse_calcul = evaluer_expression(expression)
-        afficher(reponse_calcul)
+        parler(reponse_calcul)
     
     elif "heure" in commande:
         reponse = donner_heure()
-        print(reponse)
+        parler(reponse)
 
     elif commande in memoire:
-        afficher(memoire[commande])
+        parler(memoire[commande])
 
     else:
         reponse_web = chercher_wikipedia(commande)
         if reponse_web and "introuvable" not in reponse_web.lower() and not reponse_web.startswith("Erreur"):
-            afficher("J'ai trouvé ceci sur Wikipedia :")
+            parler("J'ai trouvé ceci sur Wikipedia :")
             for i in range(0, len(reponse_web), 600):
-                afficher(reponse_web[i:i+600])
-            afficher("Veux-tu que je mémorise cette réponse pour la prochaine fois ?")
+                parler(reponse_web[i:i+600])
+            parler("Veux-tu que je mémorise cette réponse pour la prochaine fois ?")
             confirmation = ecouter()
             if "oui" in confirmation:
                 memoire[commande] = reponse_web
                 sauver_memoire(memoire)
-                afficher("Réponse enregistrée.")
+                parler("Réponse enregistrée.")
             else:
-                afficher("D'accord, je n'enregistrerai pas cette réponse.")
+                parler("D'accord, je n'enregistrerai pas cette réponse.")
         else:
-            afficher("Je ne connais pas la réponse et je n'ai rien trouvé sur Internet.")
+            parler("Je ne connais pas la réponse et je n'ai rien trouvé sur Internet.")
 
 def main():
     memoire = charger_memoire()
-    afficher("Bonjour, je suis Katyusha, votre assistante. Que puis-je faire ?")
+    parler("Bonjour, je suis Katyusha, votre assistante. Que puis-je faire ?")
     while True:
         commande = ecouter()
         if not commande:
             continue
         if "au revoir" in commande or "quitte" in commande:
-            afficher("Au revoir !")
+            parler("Au revoir !")
             break
         traiter(commande, memoire)
 
