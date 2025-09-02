@@ -38,6 +38,26 @@ def donner_heure():
     maintenant = datetime.now()
     return maintenant.strftime("Il est %H heure %M")
 
+def actualites(pays="fr"):
+    """
+    Récupère les actualités principales du jour via NewsAPI.
+    clé API : https://newsapi.org
+    """
+    api_key = "CLE_API_NEWSAPI"
+    url = f"https://newsapi.org/v2/top-headlines?country={pays}&apiKey={api_key}&language=fr"
+    try:
+        response = requests.get(url, timeout=5)
+        data = response.json()
+        if "articles" in data and len(data["articles"]) > 0:
+            articles = data["articles"][:5]  # on prend les 5 premières actus
+            titres = [f"- {a['title']}" for a in articles if "title" in a]
+            return "Voici les actualités principales du jour :\n" + "\n".join(titres)
+        else:
+            return "Je n'ai pas trouvé d'actualités pour aujourd'hui."
+    except Exception as e:
+        return f"Erreur lors de la récupération des actualités : {e}"
+
+
 def meteo(ville="Strasbourg"):
     try:
         api_key = "6fcecbe2c35649f290a161321252306"

@@ -25,7 +25,7 @@ from datetime import datetime
 import warnings
 import sys
 from Coeur import afficher, charger_memoire, sauver_memoire, classer_ton_utilisateur, mettre_a_jour_humeur, parler
-from Calcule import convertir_en_expression, evaluer_expression, donner_heure, meteo, extraire_ville, chercher_wikipedia
+from Option import convertir_en_expression, evaluer_expression, donner_heure, meteo, extraire_ville, chercher_wikipedia
 from Assistant import parser_ordre_assistant, executer_ordre_assistant, PCS, LOCAL_PC_NAME
 
 # ---- Hygiène console
@@ -103,6 +103,28 @@ def traiter(commande_brute, memoire):
     ton = classer_ton_utilisateur(commande_brute)
     mettre_a_jour_humeur(memoire, ton)
     sauver_memoire(memoire)
+
+    commande = commande_brute.lower()
+
+    # --- Réactions émotionnelles immédiates ---
+    if any(mot in commande for mot in ["merci", "super", "génial", "bravo"]):
+        parler(random.choice([
+            "Avec plaisir !",
+            "Ça me fait plaisir de t'aider !",
+            "Merci à toi aussi !",
+            "Toujours là pour toi !"
+        ]), emotion="heureux", memoire=memoire)
+        return
+
+    if any(mot in commande for mot in ["nulle", "idiote", "stupide", "mauvaise", "incompétente"]):
+        parler(random.choice([
+            "Oh... ça fait mal ce que tu dis.",
+            "D'accord... je vais essayer de faire mieux.",
+            "Je pensais bien faire pourtant...",
+            "Tu es dur avec moi..."
+        ]), emotion="triste", memoire=memoire)
+        return
+
     instruction = parser_ordre_assistant(commande_brute)
     if instruction:
         executer_ordre_assistant(instruction, memoire, PCS, LOCAL_PC_NAME, parler)
