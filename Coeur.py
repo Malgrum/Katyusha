@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+Coeur.py — Fonctions liées à l'aspect humain (humeur, mémoire, parler).
+"""
+import json
+import os
+import random
+
+MEMOIRE_FILE = "memoire.json"
+
 def afficher(texte):
     print("Katyusha:", texte)
 
