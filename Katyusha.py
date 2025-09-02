@@ -9,11 +9,8 @@ Fonctions clés :
 - Exécution locale OU via SSH (Paramiko) selon le PC ciblé.
 - Compatibilité Windows / Linux / macOS (commande navigateur configurable par PC).
 
-Dépendances supplémentaires :
-    pip install paramiko
-
-À FAIRE (par toi) :
-- Remplir le dict PCS avec les infos de tes machines (host, user, auth...).
+À FAIRE :
+- Remplir le dict PCS avec les infos des machines (host, user, auth...).
 - Activer/installer OpenSSH sur les PC distants si nécessaire.
 """
 
@@ -34,7 +31,7 @@ import sys
 try:
     import paramiko
 except Exception:
-    paramiko = None  # On gèrera le cas où Paramiko n'est pas installé
+    paramiko = None  
 
 # ---- Hygiène console
 warnings.filterwarnings("ignore")
@@ -46,30 +43,35 @@ MEMOIRE_FILE = "memoire.json"
 # =========================
 # CONFIGURATION DES PCS
 # =========================
-# Remplis ce dict avec tes machines. Tu peux dupliquer l'exemple.
+# Remplis ce dict avec les machines.
 PCS = {
     # "PC1": {
-    #     "is_local": False,                # True si c'est le PC local où tourne Katyusha
+    #     "is_local": True,                # True si c'est le PC local où tourne Katyusha
     #     "host": "192.168.1.20",
-    #     "user": "ton_user",
+    #     "user": "mon_user",
     #     "auth": "password",               # "password" ou "key"
-    #     "password": "ton_mot_de_passe",   # si auth == "password"
+    #     "password": "mon_mot_de_passe",   # si auth == "password"
     #     "key_path": "~/.ssh/id_rsa",      # si auth == "key"
-    #     "os": "windows",                  # "windows" | "linux" | "mac"
+    #     "os": "linux",                  # "windows" | "linux" | "mac"
     #     # Commande pour ouvrir une URL sur ce PC :
     #     # Laisse vide pour auto (windows: start, linux: xdg-open, mac: open),
     #     # ou force une appli (ex: 'start microsoft-edge:' / 'start chrome' / 'xdg-open' / 'open')
     #     "browser_cmd": ""
     # },
     # "PC2": {
-    #     "is_local": True,
-    #     "os": "linux",
+    #     "is_local": False,
+    #     "host": "192.168.1.20",
+    #     "user": "mon_user",
+    #     "auth": "password",               # "password" ou "key"
+    #     "password": "mon_mot_de_passe",   # si auth == "password"
+    #     "key_path": "~/.ssh/id_rsa", 
+    #     "os": "windows",
     #     "browser_cmd": ""  # vide => auto
     # }
 }
 
-# Si tu veux que le PC local soit reconnu par un nom (ex: "PCLocal")
-LOCAL_PC_NAME = "PCLocal"  # à utiliser dans tes ordres "sur PCLocal ..."
+# Le PC local soit reconnu par un nom (ex: "PCLocal")
+LOCAL_PC_NAME = "Pravda"  # à utiliser dans les ordres "sur PCLocal ..."
 
 # =========================
 # CŒUR "HUMAIN"
@@ -99,10 +101,10 @@ def sauver_memoire(memoire):
 def classer_ton_utilisateur(texte_utilisateur: str) -> str:
     """
     Très simple "détection" d'attitude de l'utilisateur.
-    Tu pourras améliorer avec un vrai modèle plus tard.
+    Pourras améliorer avec un vrai modèle plus tard.
     """
     t = texte_utilisateur.lower()
-    if any(g in t for g in ["merci", "bravo", "bien joué", "génial", "super"]):
+    if any(g in t for g in ["merci", "bravo", "bien joué", "génial", "super", "excellent"]):
         return "positif"
     if any(g in t for g in ["nul", "idiote", "ferme-la", "stupide", "conne", "dégage"]):
         return "negatif"
@@ -217,6 +219,15 @@ def evaluer_expression(expression):
 def donner_heure():
     maintenant = datetime.now()
     return maintenant.strftime("Il est %H heure %M")
+
+def actu():
+    try:
+        api_key =""
+        url = f""
+        response = requests.get(url, timeout=5)
+        data = response.json()
+    except Exception as e:
+        return f"Erreur Actu : {e}"
 
 def meteo(ville="Strasbourg"):
     try:
