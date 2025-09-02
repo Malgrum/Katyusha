@@ -43,7 +43,7 @@ def actualites(pays="fr"):
     Récupère les actualités principales du jour via NewsAPI.
     clé API : https://newsapi.org
     """
-    api_key = "CLE_API_NEWSAPI"
+    api_key = "3c23b3f232e845c4bdf6ec6512646249"
     url = f"https://newsapi.org/v2/top-headlines?country={pays}&apiKey={api_key}&language=fr"
     try:
         response = requests.get(url, timeout=5)
