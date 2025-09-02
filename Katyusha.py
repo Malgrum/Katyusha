@@ -106,7 +106,7 @@ def classer_ton_utilisateur(texte_utilisateur: str) -> str:
     t = texte_utilisateur.lower()
     if any(g in t for g in ["merci", "bravo", "bien joué", "génial", "super", "excellent"]):
         return "positif"
-    if any(g in t for g in ["nul", "idiote", "ferme-la", "stupide", "conne", "dégage"]):
+    if any(g in t for g in ["nul", "idiote", "ferme-la", "stupide", "conne", "dégage", "chier"]):
         return "negatif"
     return "neutre"
 
@@ -115,9 +115,9 @@ def mettre_a_jour_humeur(memoire, ton_utilisateur: str):
     if ton_utilisateur == "positif":
         score += 1
     elif ton_utilisateur == "negatif":
-        score -= 2  # on blesse plus vite qu'on ne félicite 😉
+        score -= 2  # on blesse plus vite qu'on ne félicite
+
     memoire["humeur_score"] = max(-5, min(5, score))
-    # Discrétisation
     if score >= 3:
         memoire["humeur"] = "joyeuse"
     elif score <= -3:
